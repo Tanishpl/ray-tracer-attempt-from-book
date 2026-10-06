@@ -20,10 +20,12 @@ Needs CMake and a C++17 compiler.
 
 ```sh
 cmake -S . -B build
-cmake --build build -j
+cmake --build build --config Release -j
 ./build/raytracer --width 1200 --spp 500 --out final.png
 ./build/tests
 ```
+
+With Visual Studio the binaries end up in `build/Release/` instead. `--config Release` matters there, otherwise you get a much slower debug build.
 
 `./build/raytracer --help` lists the other options (thread count, how rows get split between threads, turning the BVH off).
 
