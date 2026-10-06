@@ -31,16 +31,16 @@ With Visual Studio the binaries end up in `build/Release/` instead. `--config Re
 
 ## Performance
 
-From `scripts/bench.sh`, 400px wide, 32 samples per pixel, 2 cores
+From `scripts/bench.sh` on my laptop, 400px wide, 32 samples per pixel, 8 threads
 
 | Configuration | Time (s) | Speedup | Thread busy min / max (s) |
 |---|---|---|---|
-| 1 thread, no BVH | 18.95 | 1.0x | |
-| 1 thread, BVH | 2.99 | 6.3x | 2.99 / 2.99 |
-| 2 threads, BVH, equal bands | 1.95 | 9.7x | 1.18 / 1.95 |
-| 2 threads, BVH, atomic row counter | 1.52 | 12.5x | 1.51 / 1.52 |
+| 1 thread, no BVH | 23.91 | 1.0x | |
+| 1 thread, BVH | 5.54 | 4.3x | 5.54 / 5.54 |
+| 8 threads, BVH, equal bands | 1.75 | 13.7x | 0.34 / 1.75 |
+| 8 threads, BVH, atomic row counter | 1.41 | 17.0x | 1.38 / 1.41 |
 
-My first version split the image into equal bands of rows, one per thread. Timing each thread showed the top band finishing way early, because it's mostly sky and a sky ray only needs one hit test. Handing out rows one at a time from an atomic counter keeps every thread busy until the end.
+My first version split the image into equal bands of rows, one per thread. Timing each thread showed the top band finishing way early (0.34s against 1.75s for the slowest), because it's mostly sky and a sky ray only needs one hit test. Handing out rows one at a time from an atomic counter keeps every thread busy until the end.
 
 ## Notes
 
