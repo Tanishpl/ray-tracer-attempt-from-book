@@ -1,0 +1,4 @@
+build/
+*.ppm
+/render.png
+tests_tsan
