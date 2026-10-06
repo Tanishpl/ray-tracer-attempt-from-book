@@ -101,6 +101,9 @@ inline Image render(const camera& cam, const hittable& world, const RenderSettin
         rows_done.fetch_add(1, std::memory_order_relaxed);
     };
 
+    const auto t0 = clock::now();
+    std::vector<clock::time_point> finished(n, t0);
+
     auto worker = [&](int t) {
         const auto start = clock::now();
         Rng rng;
@@ -116,10 +119,9 @@ inline Image render(const camera& cam, const hittable& world, const RenderSettin
                 render_row(j, rng);
         }
 
-        busy[t] = std::chrono::duration<double>(clock::now() - start).count();
+        finished[t] = clock::now();
+        busy[t] = std::chrono::duration<double>(finished[t] - start).count();
     };
-
-    const auto t0 = clock::now();
 
     std::vector<std::thread> pool;
     pool.reserve(n);
@@ -137,7 +139,9 @@ inline Image render(const camera& cam, const hittable& world, const RenderSettin
     for (auto& th : pool) th.join();
 
     if (stats) {
-        stats->seconds = std::chrono::duration<double>(clock::now() - t0).count();
+        // stop at the last thread finishing, not after the progress loop's sleep
+        const auto last = *std::max_element(finished.begin(), finished.end());
+        stats->seconds = std::chrono::duration<double>(last - t0).count();
         stats->thread_seconds = busy;
     }
     return img;
